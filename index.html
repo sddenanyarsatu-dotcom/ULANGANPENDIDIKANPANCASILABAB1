@@ -1,0 +1,315 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Pendidikan Pancasila Kelas VI</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f0f4ff;color:#24304b;font-family:Arial,sans-serif}
+header{background:linear-gradient(130deg,#173d9b,#657bf0);color:white;text-align:center;padding:25px 12px}
+header h1{margin:9px 0;font-size:26px}
+main{max-width:850px;margin:22px auto;padding:0 12px}
+.card{background:white;border-radius:17px;padding:22px;margin-bottom:16px;box-shadow:0 5px 20px #172b6015}
+h2{color:#2947ad}
+input,select,textarea{width:100%;padding:12px;margin:7px 0 15px;border:1px solid #ccd5e8;border-radius:9px;font-size:16px}
+button{border:0;border-radius:9px;background:#3452c5;color:white;padding:12px 16px;margin:4px;font-weight:bold;cursor:pointer}
+button:hover{opacity:.85}
+.secondary{background:#64748b}
+.green{background:#16845b}
+.option{display:block;border:1px solid #d7dfef;border-radius:10px;padding:12px;margin:8px 0;cursor:pointer}
+.option:hover{background:#f0f4ff}
+.option input{width:auto;margin:0 8px 0 0}
+.progress{height:9px;background:#e4e9f5;border-radius:10px;overflow:hidden;margin:15px 0}
+#bar{height:100%;width:0;background:#15a879;transition:.2s}
+.hidden{display:none!important}
+.notice{padding:12px;background:#fff4d3;border-radius:9px}
+.score{font-size:38px;font-weight:bold;color:#14845b}
+.small{font-size:13px;color:#69758a}
+footer{text-align:center;color:#69758a;padding:20px}
+</style>
+</head>
+<body>
+<header>
+<div>🎮 PETUALANGAN GARUDA PANCASILA</div>
+<h1>Belajar Pancasila dengan Menyenangkan</h1>
+<p>Pendidikan Pancasila • Kelas VI • Bab 1</p>
+</header>
+<main>
+<section id="login" class="card">
+<h2>🔐 Login Siswa</h2>
+<p>Pilih nama dan masukkan NIPD sebagai kata sandi.</p>
+<label>Nama lengkap</label>
+<select id="nama"><option value="">-- Pilih nama --</option></select>
+<label>NIPD / Kata sandi</label>
+<input id="nipd" type="password" inputmode="numeric" placeholder="Masukkan NIPD">
+<button onclick="login()">Masuk dan Mulai 🚀</button>
+<p id="error" style="color:#c62828"></p>
+<div class="notice">Kerjakan secara mandiri. Jaga kerahasiaan NIPD dan jangan membagikan jawaban kepada teman.</div>
+</section>
+
+<section id="petunjuk" class="card hidden">
+<h2>🇮🇩 Misi Garuda</h2>
+<p id="sapaan"></p>
+<p>Selesaikan 40 soal tentang Pancasila untuk mengumpulkan poin.</p>
+<ul>
+<li>15 pilihan ganda</li>
+<li>5 pilihan ganda kompleks</li>
+<li>5 menjodohkan</li>
+<li>10 isian singkat</li>
+<li>5 uraian</li>
+</ul>
+<p>Nilai maksimal 100. Jawaban uraian diperiksa oleh guru.</p>
+<button onclick="mulai()">Mulai Misi 🎯</button>
+</section>
+
+<section id="game" class="card hidden">
+<b id="jenis"></b>
+<span id="nomor" style="float:right"></span>
+<div class="progress"><div id="bar"></div></div>
+<h2 id="pertanyaan"></h2>
+<div id="opsi"></div>
+<p id="pesan"></p>
+<button class="secondary" onclick="prev()">← Sebelumnya</button>
+<button onclick="next()">Simpan & Lanjut →</button>
+<button class="green" onclick="finish()">Selesaikan Ulangan</button>
+</section>
+
+<section id="hasil" class="card hidden">
+<h2>🏆 Hasil Misi Garuda</h2>
+<p id="identitas"></p>
+<div class="score" id="skor"></div>
+<p id="detail"></p>
+<div class="notice">Nilai di atas merupakan nilai otomatis dari 35 soal objektif. Lima soal uraian bernilai maksimal 25 poin dan perlu dinilai guru sebelum nilai akhir ditetapkan.</div>
+<button onclick="downloadResult()">⬇️ Unduh Hasil</button>
+<button onclick="sendResult()">📩 Kirim Hasil ke Guru</button>
+<p id="status"></p>
+<button class="secondary" onclick="location.reload()">Keluar</button>
+</section>
+</main>
+<footer>Belajar • Berkarakter • Mengamalkan Pancasila</footer>
+
+<script>
+// Tempel URL Web App Google Apps Script di sini setelah dikonfigurasi.
+const EMAIL_ENDPOINT = "";
+
+const students = [
+["ABID ALVARO GAVRIEL","2759"],
+["AFFIN CHARLISA ACHYARNIS","2760"],
+["ALBY FAREL AXEL FAIRUS","2761"],
+["ANGGRAITA DARA KUSUMANINGRUM","2762"],
+["ARGA ADAM ALFATIR","2763"],
+["ARIF AZHARI SETIAWAN","2764"],
+["AZIZ SATRIO PRAMBUDI","2765"],
+["AZKA KHOIRUNNISA","2766"],
+["BILQIS ZAHIRA ALYA AZIZA","2820"],
+["DANIEL IRKHAM YUNIANTO","2767"],
+["DELTA DANIES WICAKSONO","2768"],
+["ELVINA NOVITA SARI","2769"],
+["FATIN DESTIANA SHIDQIA","2770"],
+["IAN THU ALFIAN","2771"],
+["KHALISA ZAHRA RAMADHANI","2772"],
+["LABIBAH ANINDYA JIHAN TALITA ULFA","2774"],
+["MAYDA NURUL AZKIA","2775"],
+["MUHAMMAD AMIRRUDIN","2776"],
+["MUHAMMAD EZA HAFIZ ADITIYA","2777"],
+["MUHAMMAD RIFKY CAHYO SAPUTRO","2778"],
+["NURIYA JANNATUN NAIM","2779"],
+["PRABU AHMAD AHNAFI","2780"],
+["QEYLA ABSHARI FIRDA RAHMADANI","2848"],
+["RAHMAT MAULANA","2781"],
+["RAVA'EL DWI VANDIMAS","2782"],
+["RAVE'AL DIMAS PRAYOGA","2783"],
+["RISMACERLYN NUR ISKANDAR","2784"],
+["SAMUEL DESWA ANGGARA","2785"],
+["VAHDIL ASKA HARIANSYAH","2824"]
+];
+
+// Format:
+// [jenis, pertanyaan, pilihan/jawaban yang diterima, kunci]
+const questions = [
+["pg","1. Dasar negara Indonesia adalah ....",["Pancasila","UUD negara lain","Peraturan sekolah","Keputusan kelas"],0],
+["pg","2. Berapa jumlah sila dalam Pancasila?",["Tiga","Empat","Lima","Enam"],2],
+["pg","3. Lambang sila pertama Pancasila adalah ....",["Rantai","Bintang","Pohon beringin","Kepala banteng"],1],
+["pg","4. Menghormati teman yang berbeda agama merupakan pengamalan sila ....",["Pertama","Kedua","Keempat","Kelima"],0],
+["pg","5. Menolong korban bencana tanpa membedakan asalnya mencerminkan sila ....",["Pertama","Kedua","Ketiga","Keempat"],1],
+["pg","6. Mengikuti kerja bakti untuk menjaga kebersihan lingkungan mencerminkan ....",["Persatuan dan gotong royong","Persaingan","Kepentingan pribadi","Perpecahan"],0],
+["pg","7. Keputusan bersama sebaiknya diambil melalui ....",["Paksaan","Musyawarah","Pertengkaran","Ancaman"],1],
+["pg","8. Bersikap adil kepada semua teman sesuai dengan sila ....",["Pertama","Kedua","Keempat","Kelima"],3],
+["pg","9. Sila-sila Pancasila merupakan ....",["Nilai yang berdiri sendiri tanpa hubungan","Satu kesatuan yang utuh","Aturan untuk kelompok tertentu","Lima pendapat yang bertentangan"],1],
+["pg","10. Saat wawancara, hal pertama yang sebaiknya dilakukan adalah ....",["Menyela narasumber","Memperkenalkan diri dan menyampaikan tujuan","Memaksa narasumber menjawab","Langsung pergi"],1],
+["pg","11. Orang yang memberikan informasi dalam wawancara disebut ....",["Pewawancara","Narasumber","Penonton","Penulis"],1],
+["pg","12. Pertanyaan wawancara yang baik adalah ....",["Pertanyaan sopan dan jelas","Pertanyaan yang menghina","Pertanyaan yang memaksa","Pertanyaan yang tidak berkaitan"],0],
+["pg","13. Setelah wawancara, informasi yang diperoleh sebaiknya ....",["Dilupakan","Dicatat dan disajikan secara jujur","Diubah sesuka hati","Disembunyikan dari kelompok"],1],
+["pg","14. Refleksi diri bertujuan untuk ....",["Mengetahui kelebihan dan hal yang perlu diperbaiki","Menyalahkan teman","Mencari kesalahan orang lain","Menghindari tanggung jawab"],0],
+["pg","15. Program perbaikan diri yang baik harus ....",["Jelas dan dapat dilakukan","Mustahil dilaksanakan","Tidak memiliki tujuan","Selalu bergantung kepada orang lain"],0],
+
+["kompleks","16. Pilih contoh pengamalan sila pertama.",["Menghormati teman yang beribadah","Memaksakan agama kepada orang lain","Memberi kesempatan orang lain beribadah","Mengejek keyakinan orang lain"],[0,2]],
+["kompleks","17. Pilih tindakan yang mencerminkan kemanusiaan dan keadilan.",["Menolong orang yang kesusahan","Mengejek teman yang berbeda","Memperlakukan teman secara adil","Membantu hanya jika mendapat hadiah"],[0,2]],
+["kompleks","18. Pilih perilaku yang menjaga persatuan.",["Gotong royong","Menghargai perbedaan budaya","Menyebarkan permusuhan","Bekerja sama demi kepentingan bersama"],[0,1,3]],
+["kompleks","19. Pilih sikap yang baik saat melakukan wawancara.",["Meminta izin dengan sopan","Mendengarkan jawaban","Memotong pembicaraan terus-menerus","Mencatat informasi secara jujur"],[0,1,3]],
+["kompleks","20. Pilih ciri program perbaikan diri yang baik.",["Memiliki tujuan jelas","Memiliki langkah nyata","Dapat dievaluasi","Tidak perlu dilakukan secara konsisten"],[0,1,2]],
+
+["match","21. Lambang sila pertama adalah ....",["Bintang","Rantai","Pohon beringin","Kepala banteng","Padi dan kapas"],0],
+["match","22. Lambang sila kedua adalah ....",["Bintang","Rantai","Pohon beringin","Kepala banteng","Padi dan kapas"],1],
+["match","23. Lambang sila ketiga adalah ....",["Bintang","Rantai","Pohon beringin","Kepala banteng","Padi dan kapas"],2],
+["match","24. Lambang sila keempat adalah ....",["Bintang","Rantai","Pohon beringin","Kepala banteng","Padi dan kapas"],3],
+["match","25. Lambang sila kelima adalah ....",["Bintang","Rantai","Pohon beringin","Kepala banteng","Padi dan kapas"],4],
+
+["fill","26. Dasar negara Indonesia adalah ....",["pancasila"]],
+["fill","27. Kegiatan membahas masalah bersama untuk mencapai keputusan disebut ....",["musyawarah"]],
+["fill","28. Bekerja bersama untuk kepentingan umum disebut ....",["gotong royong"]],
+["fill","29. Orang yang mengajukan pertanyaan dalam wawancara disebut ....",["pewawancara"]],
+["fill","30. Orang yang memberikan jawaban dalam wawancara disebut ....",["narasumber"]],
+["fill","31. Kegiatan menilai sikap dan tindakan diri sendiri disebut ....",["refleksi diri","refleksi"]],
+["fill","32. Sikap menghargai perbedaan dan tetap bersatu mencerminkan nilai ....",["persatuan"]],
+["fill","33. Mengakui hak orang lain dan tidak berat sebelah merupakan sikap ....",["adil","keadilan"]],
+["fill","34. Catatan berisi tujuan dan langkah untuk memperbaiki perilaku diri disebut program ....",["perbaikan diri"]],
+["fill","35. Cerita yang mengandung pelajaran tentang baik dan buruk disebut cerita yang memiliki pesan ....",["moral"]],
+
+["essay","36. Jelaskan mengapa sila-sila Pancasila merupakan satu kesatuan yang utuh. Berikan satu contoh."],
+["essay","37. Tuliskan tiga contoh pengamalan Pancasila di lingkungan masyarakat dan sebutkan sila yang sesuai."],
+["essay","38. Buatlah tiga pertanyaan sopan untuk mewawancarai ketua RT tentang kegiatan gotong royong."],
+["essay","39. Tuliskan satu perilaku baik yang sudah kamu lakukan dan satu perilaku yang ingin kamu perbaiki. Jelaskan langkah perbaikannya."],
+["essay","40. Bacalah cerita berikut: 'Rani melihat tetangganya kesulitan membawa barang. Ia segera membantu. Ketika warga mengadakan musyawarah, Rani mendengarkan semua pendapat sebelum menyetujui keputusan bersama.' Jelaskan pesan moral cerita tersebut dan hubungkan dengan sila-sila Pancasila."]
+];
+
+let student=null, order=[], pos=0, answers={};
+
+const $=id=>document.getElementById(id);
+students.forEach(s=>{
+ const op=new Option(s[0],s[0]);
+ $("nama").add(op);
+});
+
+function login(){
+ const n=$("nama").value,p=$("nipd").value;
+ student=students.find(s=>s[0]===n&&s[1]===p);
+ if(!student){$("error").textContent="Nama atau NIPD tidak sesuai.";return;}
+ $("login").classList.add("hidden");
+ $("petunjuk").classList.remove("hidden");
+ $("sapaan").textContent="Selamat datang, "+student[0]+"! Siap menyelesaikan Misi Garuda?";
+}
+
+function mulai(){
+ order=questions.map((_,i)=>i);
+ for(let i=order.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [order[i],order[j]]=[order[j],order[i]];
+ }
+ pos=0;
+ $("petunjuk").classList.add("hidden");
+ $("game").classList.remove("hidden");
+ showQuestion();
+}
+
+function showQuestion(){
+ const q=questions[order[pos]],box=$("opsi");
+ const labels={pg:"Pilihan Ganda",kompleks:"Pilihan Ganda Kompleks",match:"Menjodohkan",fill:"Isian Singkat",essay:"Uraian"};
+ $("jenis").textContent=labels[q[0]];
+ $("nomor").textContent=`Soal ${pos+1}/40`;
+ $("bar").style.width=((pos+1)/40*100)+"%";
+ $("pertanyaan").textContent=q[1];
+ $("pesan").textContent="";
+ box.innerHTML="";
+
+ if(q[0]==="pg"||q[0]==="kompleks"){
+  q[2].forEach((v,i)=>{
+   const lab=document.createElement("label");lab.className="option";
+   const inp=document.createElement("input");
+   inp.type=q[0]==="pg"?"radio":"checkbox";
+   inp.name="ans";inp.value=i;
+   const old=answers[order[pos]];
+   inp.checked=q[0]==="pg"?old===i:Array.isArray(old)&&old.includes(i);
+   lab.append(inp,document.createTextNode(" "+String.fromCharCode(65+i)+". "+v));
+   box.append(lab);
+  });
+  if(q[0]==="kompleks")box.insertAdjacentHTML("beforeend","<p class='small'>Pilih semua jawaban yang benar.</p>");
+ }else if(q[0]==="match"){
+  const sel=document.createElement("select");sel.id="ans";
+  sel.add(new Option("-- Pilih lambang --",""));
+  q[2].forEach((v,i)=>sel.add(new Option(v,String(i))));
+  sel.value=answers[order[pos]]??"";
+  box.append(sel);
+ }else{
+  const ta=document.createElement("textarea");
+  ta.rows=q[0]==="essay"?5:2;
+  ta.placeholder=q[0]==="essay"?"Tuliskan jawaban dengan jelas...":"Ketik jawaban singkat...";
+  ta.value=answers[order[pos]]||"";
+  box.append(ta);
+ }
+}
+
+function save(){
+ const q=questions[order[pos]];
+ if(q[0]==="pg"){
+  const v=document.querySelector('input[name="ans"]:checked');
+  if(v)answers[order[pos]]=Number(v.value);
+ }else if(q[0]==="kompleks"){
+  answers[order[pos]]=[...document.querySelectorAll('input[name="ans"]:checked')].map(x=>Number(x.value));
+ }else if(q[0]==="match"){
+  answers[order[pos]]=$("ans").value;
+ }else{
+  answers[order[pos]]=$("opsi").querySelector("textarea").value.trim();
+ }
+}
+function prev(){save();if(pos>0){pos--;showQuestion();}}
+function next(){save();if(pos<39){pos++;showQuestion();}else $("pesan").textContent="Ini soal terakhir. Periksa jawaban sebelum menyelesaikan ulangan.";}
+
+function finish(){
+ save();
+ if(!confirm("Yakin menyelesaikan ulangan?"))return;
+ const detail={pg:0,kompleks:0,match:0,fill:0};
+ questions.forEach((q,i)=>{
+  const a=answers[i];
+  if(q[0]==="pg"&&a===q[3])detail.pg+=2;
+  if(q[0]==="kompleks"&&Array.isArray(a)&&a.length===q[3].length&&a.every(x=>q[3].includes(x)))detail.kompleks+=3;
+  if(q[0]==="match"&&a!==undefined&&a!==""&&Number(a)===q[3])detail.match+=2;
+  if(q[0]==="fill"&&typeof a==="string"&&q[2].some(x=>a.trim().toLowerCase()===x.toLowerCase()))detail.fill+=2;
+ });
+ const total=detail.pg+detail.kompleks+detail.match+detail.fill;
+ window.result={
+  nama:student[0],nipd:student[1],
+  tanggal:new Date().toLocaleString("id-ID"),
+  nilaiOtomatis:total,
+  rincian:detail,
+  jawaban:questions.map((q,i)=>({
+   nomor:i+1,jenis:q[0],pertanyaan:q[1],jawaban:answers[i]??""
+  }))
+ };
+ $("game").classList.add("hidden");
+ $("hasil").classList.remove("hidden");
+ $("identitas").textContent=student[0]+" • NIPD: "+student[1];
+ $("skor").textContent=total+"/75";
+ $("detail").textContent=`Pilihan ganda ${detail.pg}/30 • Kompleks ${detail.kompleks}/15 • Menjodohkan ${detail.match}/10 • Isian ${detail.fill}/20 • Uraian menunggu penilaian guru/25.`;
+}
+
+function downloadResult(){
+ const blob=new Blob([JSON.stringify(window.result,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;a.download="hasil-pancasila-"+student[1]+".json";
+ a.click();URL.revokeObjectURL(url);
+}
+
+async function sendResult(){
+ if(!EMAIL_ENDPOINT){
+  $("status").textContent="Pengiriman belum aktif. Konfigurasikan Google Apps Script lalu isi EMAIL_ENDPOINT.";
+  return;
+ }
+ $("status").textContent="Mengirim permintaan...";
+ try{
+  await fetch(EMAIL_ENDPOINT,{
+   method:"POST",mode:"no-cors",
+   headers:{"Content-Type":"text/plain;charset=utf-8"},
+   body:JSON.stringify(window.result)
+  });
+  $("status").textContent="Permintaan telah dikirim. Periksa Google Sheets dan Gmail guru untuk memastikan penerimaan.";
+ }catch(e){
+  $("status").textContent="Pengiriman gagal. Silakan unduh hasil sebagai cadangan.";
+ }
+}
+</script>
+</body>
+</html>
